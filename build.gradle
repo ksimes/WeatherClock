@@ -1,0 +1,58 @@
+plugins {
+    id "org.springframework.boot" version "2.0.0.RELEASE"
+}
+
+group 'com.stronans'
+version '1.0-RELEASE'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+mainClassName = 'com.stronans.weather.Application'
+
+dependencies {
+    implementation 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compile group: 'org.springframework.boot', name: 'spring-boot', version: '2.2.0.RELEASE'
+//    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.0.RELEASE'
+//    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.2.0.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: '2.2.0.RELEASE'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor
+    compile group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.2.1.RELEASE'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation 'org.apache.logging.log4j:log4j-core:2.17.2'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    // https://mvnrepository.com/artifact/org.ehcache/ehcache
+    implementation 'org.ehcache:ehcache:3.10.0'
+    implementation(files("libs/mp3transform.jar"))
+
+//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-core
+//    implementation 'com.pi4j:pi4j-core:2.1.1'
+
+    // https://mvnrepository.com/artifact/com.pi4j/pi4j-core
+    implementation 'com.pi4j:pi4j-core:1.4'
+//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-device
+//    implementation 'com.pi4j:pi4j-device:1.4'
+//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-gpio-extension
+//    implementation 'com.pi4j:pi4j-gpio-extension:1.4'
+    // https://mvnrepository.com/artifact/com.pi4j/pi4j-native
+    implementation 'com.pi4j:pi4j-native:1.4'
+
+    testImplementation 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.2.1.RELEASE'
+}

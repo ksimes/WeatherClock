@@ -1,0 +1,24 @@
+stronans:
+  weatherclock:
+    sampling: 2
+    source: MetOfficeWeather
+    latitude:
+    longitude:
+    cron:
+      expression: "0 */5 * * * *"
+    chime:
+      SOUNDER.WAV
+#      chime.mp3
+
+# Log4j2 configuration
+logging:
+  file:
+    name: logs/weatherclock.log
+  pattern:
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    com.stronans.weather: INFO
+    reactor: ERROR
+
+server:
+  port: 16000

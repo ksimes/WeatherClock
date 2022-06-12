@@ -1,0 +1,22 @@
+### AccuWeather
+GET http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/328226?apikey=dhUGXdjHURYHlKVeHyFXNB2wkWd2W7CE&language=en-gb&details=true&metric=true
+
+### MetOffice
+GET https://rgw.5878-e94b1c46.eu-gb.apiconnect.appdomain.cloud/metoffice/production/v0/forecasts/point/three-hourly?includeLocationName=true&latitude=55.82931073002962&longitude=-4.291096849105938
+x-ibm-client-secret: c88ae0923b6d5e5bea12940f73650ef0
+x-ibm-client-id: ab610c8ee8412d41448f8004199de7bd
+accept: application/json
+
+### MetOffice
+GET https://api-metoffice.apiconnect.ibmcloud.com/metoffice/production/v0/forecasts/point/hourly?excludeParameterMetadata=false&includeLocationName=true&latitude=55.82931073002962&longitude=-4.291096849105938
+x-ibm-client-secret: c88ae0923b6d5e5bea12940f73650ef0
+x-ibm-client-id: ab610c8ee8412d41448f8004199de7bd
+accept: application/json
+
+### MetOffice
+GET https://api-metoffice.apiconnect.ibmcloud.com/metoffice/production/v0/forecasts/point/hourly?excludeParameterMetadata=false&includeLocationName=true&latitude=55.82931073002962&longitude=-4.291096849105938
+x-ibm-client-secret: 60786191b7a10d48d4aa8f9bfe562fca
+x-ibm-client-id: 9c736bad79461cf1bc056e42d07d6dae
+accept: application/json
+
+
