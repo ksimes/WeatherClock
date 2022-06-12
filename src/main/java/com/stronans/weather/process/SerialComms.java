@@ -1,12 +1,15 @@
 package com.stronans.weather.process;
 
-import com.pi4j.io.serial.*;
+import com.pi4j.io.serial.FlowControl;
+import com.pi4j.io.serial.Parity;
+import com.pi4j.io.serial.Serial;
+import com.pi4j.io.serial.StopBits;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -20,18 +23,18 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class SerialComms {
 
     private Serial serial;
-    private String comPort = "COM1";
-    private int speed = 9600;     // Default com speed
+    private String comPort = "COM1";    // Default serial port
+    private int speed = 9600;           // Default com speed
+    private final DeviceContext context;
+    private static int counter = 1;
 
-    private static final String terminator = "\r";
-    private static final char terminatorchar = '\r';
+    private static final String terminator = "\r";      // Message terminator
 
-    private String message;
-
-    private static final ArrayBlockingQueue<String> messages = new ArrayBlockingQueue<>(20);
+    private static final ArrayBlockingQueue<String> messages = new ArrayBlockingQueue<>(2000);
     private static final List<MessageListener> listeners = new ArrayList<>();
 
-    public SerialComms() {
+    public SerialComms(DeviceContext context) {
+        this.context = context;
     }
 
     public void configure(String port, int speed) {
@@ -44,29 +47,38 @@ public class SerialComms {
         }
 
         log.info("comPost = {}", comPort);
-        log.info("speed = {}", this.speed);
+//        log.info("speed = {}", this.speed);
 
         // create an instance of the serial communications class
-        serial = SerialFactory.createInstance();
+        serial = context.getContext().create(Serial.newConfigBuilder(context.getContext())
+                .use_115200_N81()
+                .dataBits_8()
+                .id("comz" + counter++)
+                .parity(Parity.NONE)
+                .stopBits(StopBits._1)
+                .flowControl(FlowControl.NONE)
+                .device(comPort)
+                .provider("pigpio-serial")
+                .build());
 
-        // create and register the serial data listener
-        serial.addListener(new SerialDataEventListener() {
-            @Override
-            public void dataReceived(SerialDataEvent event) {
-                try {
-                    message += event.getString(Charset.defaultCharset());
-                } catch (IOException e) {
-                    log.error("Cannot convert text from : " + comPort + " : " + e.getMessage(), e);
-                }
-//                log.info("Pi received : [" + message + "]");
+// Start a thread to handle the incoming data from the serial port
+        SerialReader serialReader = new SerialReader(serial);
+        Thread serialReaderThread = new Thread(serialReader, "SerialReader");
+        serialReaderThread.setDaemon(true);
+        serialReaderThread.start();
 
-                while (message.contains(terminator)) {
-                    messages.add(message.substring(0, message.indexOf(terminatorchar)));
-                    notifyListeners();
-                    message = message.substring(message.indexOf(terminatorchar) + 1);
-                }
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+                                                 @Override
+                                                 public void run() {
+                                                     if (!context.getContext().isShutdown()) {
+                                                         context.getContext().shutdown();
+                                                         log.info("Shutdown Context with Serial hook.");
+                                                     } else {
+                                                         log.info("Context already Shutdown in Serial hook.");
+                                                     }
+                                                 }
+                                             }
+        );
     }
 
     public void configure(String port) {
@@ -98,51 +110,30 @@ public class SerialComms {
     }
 
     public synchronized void sendMessage(String message) {
-        try {
-            log.info("Message Sent : [" + message + "] port :" + comPort);
-            serial.write(message + terminator);
-        } catch (IOException ex) {
-            log.error(" ==>> SERIAL WRITE FAILED on port : " + comPort + " : " + ex.getMessage(), ex);
-        }
+        String finalMsg = message + terminator;
+        log.info("Message Sent : [{}] to port :{}", finalMsg, comPort);
+        serial.write(finalMsg);
     }
 
     public void startComms() {
         try {
-            // create serial config object
-            SerialConfig config = new SerialConfig();
-            // set default serial settings (device, baud rate, flow control, etc)
-            //
-            // by default, use the DEFAULT com port on the Raspberry Pi (exposed on GPIO header)
-            // NOTE: this utility method will determine the default serial port for the
-            //       detected platform and board/model.  For all Raspberry Pi models
-            //       except the 3B, it will return "/dev/ttyAMA0".  For Raspberry Pi
-            //       model 3B may return "/dev/ttyS0" or "/dev/ttyAMA0" depending on
-            //       environment configuration.
-            config.device(comPort)
-                    .baud(Baud._115200)
-                    .dataBits(DataBits._8)
-                    .parity(Parity.NONE)
-                    .stopBits(StopBits._1)
-                    .flowControl(FlowControl.NONE);
+            serial.open();
 
-            serial.open(config);
             // Wait till the serial port is open
             while (!serial.isOpen()) {
                 Thread.sleep(250);
             }
-        } catch (IOException | InterruptedException ex) {
+            log.info("Serial MetaData = {}", serial.getMetadata().all());
+
+        } catch (InterruptedException ex) {
             log.error(" ==>> SERIAL SETUP FAILED on port : " + comPort + " : " + ex.getMessage(), ex);
         }
     }
 
     public void endComms() {
-        try {
-            // Check if open the serial port provided on the GPIO header
-            if (serial.isOpen()) {
-                serial.close();
-            }
-        } catch (IOException ex) {
-            log.error(" ==>> SERIAL SHUTDOWN FAILED on port : " + comPort + " : " + ex.getMessage(), ex);
+        // Check if open the serial port provided on the GPIO header
+        if (serial.isOpen()) {
+            serial.close();
         }
     }
 
@@ -158,6 +149,60 @@ public class SerialComms {
         if (!listeners.isEmpty()) {
             for (MessageListener listener : listeners) {
                 listener.messageReceived();
+            }
+        }
+    }
+
+    public static class SerialReader implements Runnable {
+
+        private final Serial serial;
+
+        private boolean continueReading = true;
+
+        public SerialReader(Serial serial) {
+            this.serial = serial;
+        }
+
+        public void stopReading() {
+            continueReading = false;
+        }
+
+        @Override
+        public void run() {
+            // We use a buffered reader to handle the data received from the serial port
+            BufferedReader br = new BufferedReader(new InputStreamReader(serial.getInputStream()));
+
+            try {
+                // Data from the GPS is recieved in lines
+                String line = "";
+
+                // Read data until the flag is false
+                while (continueReading) {
+                    // First we need to check if there is data available to read.
+                    // The read() command for pigio-serial is a NON-BLOCKING call,
+                    // in contrast to typical java input streams.
+                    var available = serial.available();
+                    if (available > 0) {
+                        for (int i = 0; i < available; i++) {
+                            byte b = (byte) br.read();
+                            if (b < 32) {
+                                // All non-string bytes are handled as line breaks
+                                if (!line.isEmpty()) {
+                                    // Here we should add code to parse the data to a GPS data object
+                                    log.info("from port {}", line);
+                                    messages.add(line);
+                                    line = "";
+                                }
+                            } else {
+                                line += (char) b;
+                            }
+                        }
+                    } else {
+                        Thread.sleep(10);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Exception = {}", e.getMessage(), e);
             }
         }
     }

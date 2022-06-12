@@ -12,7 +12,7 @@
 #include "messages.h"
 
 #define VERSION "1.01"
-#define SERIAL_SPEED 9600
+#define SERIAL_SPEED 115200
 
 #define WEATHER_HAND 0
 #define TEMPERATURE_HAND 1
@@ -33,7 +33,7 @@ const String MSG_HEADER = "{\"gauge\":\"";
 const int MSG_HEADER_SIZE = MSG_HEADER.length();
 const String POSITION_STRING = "\"position\":";
 
-// Up to twelve servo objects can be created on most boards
+// Up to two servo objects can be created on most boards before power problems occur
 ClockHand weatherClockHand( WEATHER_CONTROL_PIN, WEATHER_START_ANGLE, WEATHER_END_ANGLE, WEATHER_STEP_START, WEATHER_STEP_LAST );
 ClockHand temperatureClockHand( TEMP_CONTROL_PIN, TEMP_START_ANGLE, TEMP_END_ANGLE, TEMP_STEP_START, TEMP_STEP_LAST );
 //ClockHand uvIndexClockHand( UV_CONTROL_PIN, UV_START_ANGLE, UV_END_ANGLE, UV_STEP_START, UV_STEP_LAST );

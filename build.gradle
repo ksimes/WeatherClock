@@ -37,17 +37,15 @@ dependencies {
     implementation 'org.ehcache:ehcache:3.10.0'
     implementation(files("libs/mp3transform.jar"))
 
-//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-core
-//    implementation 'com.pi4j:pi4j-core:2.1.1'
-
     // https://mvnrepository.com/artifact/com.pi4j/pi4j-core
-    implementation 'com.pi4j:pi4j-core:1.4'
-//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-device
-//    implementation 'com.pi4j:pi4j-device:1.4'
-//    // https://mvnrepository.com/artifact/com.pi4j/pi4j-gpio-extension
-//    implementation 'com.pi4j:pi4j-gpio-extension:1.4'
-    // https://mvnrepository.com/artifact/com.pi4j/pi4j-native
-    implementation 'com.pi4j:pi4j-native:1.4'
+    implementation 'com.pi4j:pi4j-core:2.1.1'
+    // https://mvnrepository.com/artifact/com.pi4j/pi4j-plugin-raspberrypi
+    implementation 'com.pi4j:pi4j-plugin-raspberrypi:2.1.1'
+    // https://mvnrepository.com/artifact/com.pi4j/pi4j-plugin-pigpio
+    implementation 'com.pi4j:pi4j-plugin-pigpio:2.1.1'
+    // https://mvnrepository.com/artifact/com.pi4j/pi4j-library-pigpio
+    implementation 'com.pi4j:pi4j-library-pigpio:2.1.1'
+
 
     testImplementation 'org.projectlombok:lombok:1.18.12'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'

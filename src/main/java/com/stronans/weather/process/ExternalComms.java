@@ -13,13 +13,13 @@ import static java.lang.Thread.sleep;
 @Component
 public class ExternalComms implements MessageListener {
     private static final String NANO_CLOCK_LINK = "/dev/ttyUSB0";
-    private static final String NANO_DIALS_LINK = "/dev/ttyUSB1";
+//    private static final String NANO_DIALS_LINK = "/dev/ttyUSB1";
     private static final int CONNECTION_SPEED = 115200;
 
     private final SerialComms ServoClockNano;
 //    private final SerialComms ServoDialsNano;
 
-    public ExternalComms(SerialComms ServoClockNano  /*, SerialComms ServoDialsNano */) {
+    public ExternalComms(SerialComms ServoClockNano /*, SerialComms ServoDialsNano */) {
 
         this.ServoClockNano = ServoClockNano;
         this.ServoClockNano.configure(NANO_CLOCK_LINK, CONNECTION_SPEED);
@@ -44,15 +44,7 @@ public class ExternalComms implements MessageListener {
     }
 
     private int getWeatherArmPosition(WeatherState state) {
-//        int result = state.ordinal() + 1;
-        // FOG,
-        // CLOUDY,
-        // RAIN,
-        // SUNNY,
-        // THUNDER,
-        // SNOW,
-        // HEAVY_SNOW
-
+        // FOG, CLOUDY, RAIN, SUNNY, THUNDER, SNOW, HEAVY_SNOW
         return state.ordinal() + 1;
     }
 
@@ -63,24 +55,12 @@ public class ExternalComms implements MessageListener {
     }
 
     private int getUVIndexArmPosition(UVIndexState uxState) {
-//        LOW_EXPOSURE,
-//        MODERATE_EXPOSURE,
-//        HIGH_EXPOSURE,
-//        VERY_HIGH_EXPOSURE,
-//        EXTREME_EXPOSURE
-
+//        LOW_EXPOSURE, MODERATE_EXPOSURE, HIGH_EXPOSURE, VERY_HIGH_EXPOSURE, EXTREME_EXPOSURE
         return uxState.ordinal() + 1;
     }
 
     private int getVisibilityArmPosition(VisibilityState visibilityState) {
-//        UNKNOWN,
-//        VERY_POOR,
-//        POOR,
-//        MODERATE,
-//        GOOD,
-//        VERY_GOOD,
-//        EXCELLENT
-
+//        UNKNOWN, VERY_POOR, POOR, MODERATE, GOOD, VERY_GOOD, EXCELLENT
         return visibilityState.ordinal() + 1;
     }
 
@@ -93,13 +73,13 @@ public class ExternalComms implements MessageListener {
     }
 
     private void sendMessageToClock(String gauge, int position) {
-        String message = "{\"gauge\":" + gauge + ", \"position\":" + position + "}";
+        String message = "{\"gauge\":\"" + gauge + "\", \"position\":" + position + "}";
         log.info("final clock message = {}", message);
         ServoClockNano.sendMessage(message);
     }
 
     private void sendMessageToDials(String gauge, int position) {
-        String message = "{\"gauge\":" + gauge + ", \"position\":" + position + "}";
+        String message = "{\"gauge\":\"" + gauge + "\", \"position\":" + position + "}";
         log.info("final dial message = {}", message);
 //        ServoDialsNano.sendMessage(message);
     }
